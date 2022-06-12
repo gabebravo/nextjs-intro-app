@@ -1,6 +1,37 @@
-import Head from 'next/head'
+import React from 'react';
+import Head from 'next/head';
+import Alert from '../components/AlertToggle';
+import BlogPost from '../components/BlogPost';
 
-export default function Home() {
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts
+  const postRes = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const userRes = await fetch('https://jsonplaceholder.typicode.com/users');
+  const photoRes = await fetch('https://jsonplaceholder.typicode.com/photos');
+  const posts = await postRes.json();
+  const users = await userRes.json();
+  const photos = await photoRes.json();
+
+  const postList = users.reduce((acc, user, index) => {
+    const newPost = {
+      ...posts[index],
+      author: user?.name,
+      image: photos[index]?.thumbnailUrl,
+    };
+    acc.push(newPost);
+    return acc;
+  }, []);
+
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      posts: postList,
+    },
+  };
+}
+
+export default function Home({ posts }) {
   return (
     <div className="container">
       <Head>
@@ -8,55 +39,14 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+      <main className="main">
+        <h1 className="title">Blog Posts </h1>
+        <Alert />
+        <BlogPost posts={posts} />
       </main>
 
       <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className="logo" />
-        </a>
+        <p>This is the homepage</p>
       </footer>
 
       <style jsx>{`
@@ -85,101 +75,13 @@ export default function Home() {
           display: flex;
           justify-content: center;
           align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
+          color: blue;
         }
 
         .title {
           margin: 0;
           line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
+          font-size: 2rem;
         }
 
         @media (max-width: 600px) {
@@ -205,5 +107,5 @@ export default function Home() {
         }
       `}</style>
     </div>
-  )
+  );
 }
